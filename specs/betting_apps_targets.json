@@ -1,0 +1,112 @@
+{
+  "version": "1.0.0",
+  "category": "gambling_betting",
+  "description": "Targeted betting & gambling apps for risk screening. Android uses package_name with <queries>; iOS uses ios_scheme with canOpenURL(_:).",
+  "targets": [
+    {
+      "id": "bet365",
+      "name": "bet365",
+      "android_package": "com.bet365.app",
+      "ios_scheme": "bet365",
+      "ios_support_status": "supported"
+    },
+    {
+      "id": "novibet",
+      "name": "Novibet",
+      "android_package": "gr.novibet",
+      "ios_scheme": "novibet",
+      "ios_support_status": "supported"
+    },
+    {
+      "id": "sportingbet",
+      "name": "Sportingbet Livescore",
+      "android_package": "com.sportingbet.sportsbook",
+      "ios_scheme": "sportingbet",
+      "ios_support_status": "supported"
+    },
+    {
+      "id": "superbets",
+      "name": "Superbets",
+      "android_package": "com.superbet.app",
+      "ios_scheme": "superbet",
+      "ios_support_status": "supported"
+    },
+    {
+      "id": "kto",
+      "name": "KTO",
+      "android_package": "com.kto.sports",
+      "ios_scheme": "kto",
+      "ios_support_status": "supported"
+    },
+    {
+      "id": "betano",
+      "name": "Betano",
+      "android_package": "com.betano.app",
+      "ios_scheme": "betano",
+      "ios_support_status": "supported"
+    },
+    {
+      "id": "betfair",
+      "name": "Betfair",
+      "android_package": "com.betfair.sportsbook",
+      "ios_scheme": "betfair",
+      "ios_support_status": "supported"
+    },
+    {
+      "id": "betsson",
+      "name": "Betsson",
+      "android_package": "com.betsson.sportsbook",
+      "ios_scheme": "betsson",
+      "ios_support_status": "supported"
+    },
+    {
+      "id": "rivalo",
+      "name": "Rivalo",
+      "android_package": "com.rivalo.app",
+      "ios_scheme": "rivalo",
+      "ios_support_status": "supported"
+    },
+    {
+      "id": "onexbet",
+      "name": "1xBet",
+      "android_package": "com.onexbet.mobile",
+      "ios_scheme": "onexbet",
+      "ios_support_status": "supported"
+    },
+    {
+      "id": "galera_bet",
+      "name": "Galera.bet",
+      "android_package": "com.galerabet.app",
+      "ios_scheme": null,
+      "ios_support_status": "unsupported_scheme_absent"
+    },
+    {
+      "id": "pixbet",
+      "name": "Pixbet",
+      "android_package": "com.pixbet.app",
+      "ios_scheme": null,
+      "ios_support_status": "unsupported_scheme_absent"
+    },
+    {
+      "id": "estrelabet",
+      "name": "EstrelaBet",
+      "android_package": "com.estrelabet.app",
+      "ios_scheme": null,
+      "ios_support_status": "unsupported_scheme_absent"
+    },
+    {
+      "id": "pinnacle",
+      "name": "Pinnacle Sports",
+      "android_package": "com.pinnacle.sportsbook",
+      "ios_scheme": "pinnacle",
+      "ios_support_status": "supported"
+    },
+    {
+      "id": "pokerstars",
+      "name": "PokerStars",
+      "android_package": "com.pyrsoftware.pokerstars",
+      "ios_scheme": "pokerstars",
+      "ios_support_status": "supported"
+    }
+  ]
+}

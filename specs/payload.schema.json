@@ -1,0 +1,194 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SentinelCapturePayload",
+  "description": "Standardized payload schema captured by Sentinel SDK for mobile risk and identity validation.",
+  "type": "object",
+  "required": [
+    "metadata",
+    "user_data",
+    "device_data",
+    "location_data",
+    "installed_apps",
+    "security"
+  ],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": [
+        "sdk_version",
+        "platform",
+        "os_version",
+        "wrapper",
+        "session_id",
+        "request_id",
+        "timestamp",
+        "capture_duration_ms"
+      ],
+      "properties": {
+        "sdk_version": { "type": "string" },
+        "platform": { "type": "string", "enum": ["ios", "android"] },
+        "os_version": { "type": "string" },
+        "wrapper": { "type": "string", "enum": ["native", "react-native", "flutter"] },
+        "session_id": { "type": "string" },
+        "request_id": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "capture_duration_ms": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "user_data": {
+      "type": "object",
+      "required": ["full_name", "validation"],
+      "properties": {
+        "full_name": { "type": "string" },
+        "document_id": { "type": ["string", "null"] },
+        "email": { "type": ["string", "null"] },
+        "phone_number": { "type": ["string", "null"] },
+        "validation": {
+          "type": "object",
+          "required": [
+            "is_valid",
+            "name_format_valid",
+            "document_valid",
+            "phone_format_valid",
+            "validation_errors"
+          ],
+          "properties": {
+            "is_valid": { "type": "boolean" },
+            "name_format_valid": { "type": "boolean" },
+            "document_valid": { "type": "boolean" },
+            "phone_format_valid": { "type": "boolean" },
+            "validation_errors": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "device_data": {
+      "type": "object",
+      "required": [
+        "device_identifier",
+        "model",
+        "manufacturer",
+        "locale",
+        "timezone",
+        "is_jailbroken_or_rooted",
+        "is_emulator",
+        "telephony"
+      ],
+      "properties": {
+        "device_identifier": { "type": "string" },
+        "model": { "type": "string" },
+        "manufacturer": { "type": "string" },
+        "brand": { "type": "string" },
+        "locale": { "type": "string" },
+        "timezone": { "type": "string" },
+        "screen_resolution": { "type": "string" },
+        "battery_level": { "type": "number", "minimum": 0, "maximum": 1 },
+        "battery_state": { "type": "string", "enum": ["charging", "unplugged", "full", "unknown"] },
+        "is_jailbroken_or_rooted": { "type": "boolean" },
+        "is_emulator": { "type": "boolean" },
+        "telephony": {
+          "type": "object",
+          "required": [
+            "carrier_name",
+            "mobile_country_code",
+            "mobile_network_code",
+            "iso_country_code",
+            "network_type",
+            "is_sim_ready"
+          ],
+          "properties": {
+            "carrier_name": { "type": "string" },
+            "mobile_country_code": { "type": "string" },
+            "mobile_network_code": { "type": "string" },
+            "iso_country_code": { "type": "string" },
+            "network_type": { "type": "string" },
+            "is_sim_ready": { "type": "boolean" },
+            "sim_operator_name": { "type": "string" }
+          }
+        }
+      }
+    },
+    "location_data": {
+      "type": "object",
+      "required": [
+        "status",
+        "permission_status",
+        "coordinates",
+        "timestamp",
+        "is_mock_location"
+      ],
+      "properties": {
+        "status": { "type": "string", "enum": ["SUCCESS", "PERMISSION_DENIED", "TIMEOUT", "UNAVAILABLE"] },
+        "permission_status": { "type": "string" },
+        "coordinates": {
+          "type": "object",
+          "required": ["latitude", "longitude", "accuracy_meters"],
+          "properties": {
+            "latitude": { "type": "number" },
+            "longitude": { "type": "number" },
+            "accuracy_meters": { "type": "number" },
+            "altitude_meters": { "type": ["number", "null"] },
+            "altitude_accuracy_meters": { "type": ["number", "null"] },
+            "heading_degrees": { "type": ["number", "null"] },
+            "speed_mps": { "type": ["number", "null"] }
+          }
+        },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "is_mock_location": { "type": "boolean" }
+      }
+    },
+    "installed_apps": {
+      "type": "object",
+      "required": [
+        "scan_strategy",
+        "total_targets_scanned",
+        "total_detected",
+        "risk_level",
+        "has_betting_apps",
+        "detected_apps",
+        "unresolved_schemes_count"
+      ],
+      "properties": {
+        "scan_strategy": { "type": "string" },
+        "total_targets_scanned": { "type": "integer" },
+        "total_detected": { "type": "integer" },
+        "risk_level": { "type": "string", "enum": ["CLEAN", "FLAGGED", "UNKNOWN"] },
+        "has_betting_apps": { "type": "boolean" },
+        "detected_apps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["target_id", "app_name", "category", "detection_identifier", "detection_method", "is_detected"],
+            "properties": {
+              "target_id": { "type": "string" },
+              "app_name": { "type": "string" },
+              "category": { "type": "string" },
+              "detection_identifier": { "type": "string" },
+              "detection_method": { "type": "string" },
+              "is_detected": { "type": "boolean" }
+            }
+          }
+        },
+        "unresolved_schemes_count": { "type": "integer" }
+      }
+    },
+    "security": {
+      "type": "object",
+      "required": [
+        "payload_hash",
+        "signature",
+        "nonce",
+        "tamper_detected"
+      ],
+      "properties": {
+        "payload_hash": { "type": "string" },
+        "signature": { "type": "string" },
+        "nonce": { "type": "string" },
+        "tamper_detected": { "type": "boolean" }
+      }
+    }
+  }
+}

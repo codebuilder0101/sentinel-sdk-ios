@@ -1,0 +1,28 @@
+{
+  "name": "@sentinel/react-native",
+  "version": "1.0.0",
+  "description": "React Native Bridge Wrapper for Sentinel Mobile Security SDK",
+  "main": "lib/commonjs/index.js",
+  "module": "lib/module/index.js",
+  "types": "lib/typescript/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [
+    "react-native",
+    "ios",
+    "android",
+    "security",
+    "fraud-prevention",
+    "compliance"
+  ],
+  "author": "Sentinel Security",
+  "license": "UNLICENSED",
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
