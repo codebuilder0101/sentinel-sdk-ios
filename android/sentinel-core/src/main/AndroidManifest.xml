@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.sentinel.sdk">
+
+    <!-- Permissions required by the SDK (to be merged into the host application) -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <!--
+      Targeted Package Queries for Gambling & Betting App Detection.
+      Satisfies Google Play Package Visibility requirements without QUERY_ALL_PACKAGES.
+    -->
+    <queries>
+        <package android:name="com.bet365.app" />
+        <package android:name="gr.novibet" />
+        <package android:name="com.sportingbet.sportsbook" />
+        <package android:name="com.superbet.app" />
+        <package android:name="com.kto.sports" />
+        <package android:name="com.betano.app" />
+        <package android:name="com.betfair.sportsbook" />
+        <package android:name="com.betsson.sportsbook" />
+        <package android:name="com.rivalo.app" />
+        <package android:name="com.onexbet.mobile" />
+        <package android:name="com.galerabet.app" />
+        <package android:name="com.pixbet.app" />
+        <package android:name="com.estrelabet.app" />
+        <package android:name="com.pinnacle.sportsbook" />
+        <package android:name="com.pyrsoftware.pokerstars" />
+    </queries>
+
+</manifest>

@@ -1,0 +1,27 @@
+name: sentinel_flutter
+description: Flutter plugin wrapper for Sentinel Mobile Security SDK.
+version: 1.0.0
+homepage: https://sentinel-sdk.dev
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  plugin_platform_interface: ^2.1.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.sentinel.flutter
+        pluginClass: SentinelFlutterPlugin
+      ios:
+        pluginClass: SentinelFlutterPlugin

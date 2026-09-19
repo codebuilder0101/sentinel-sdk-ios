@@ -1,0 +1,103 @@
+{
+  "$schema": "./payload.schema.json",
+  "metadata": {
+    "sdk_version": "1.0.0",
+    "platform": "ios",
+    "os_version": "17.4.1",
+    "wrapper": "react-native",
+    "session_id": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+    "request_id": "req_01HV8Z9K3M2QPX9R8B5T4Y1W2Z",
+    "timestamp": "2026-09-20T00:35:00.000Z",
+    "capture_duration_ms": 342
+  },
+  "user_data": {
+    "full_name": "João da Silva",
+    "document_id": "123.456.789-00",
+    "email": "joao.silva@example.com",
+    "phone_number": "+5511999998888",
+    "validation": {
+      "is_valid": true,
+      "name_format_valid": true,
+      "document_valid": true,
+      "phone_format_valid": true,
+      "validation_errors": []
+    }
+  },
+  "device_data": {
+    "device_identifier": "A7D4C3B2-1E0F-4A9B-8C7D-6E5F4A3B2C1D",
+    "model": "iPhone 15 Pro",
+    "manufacturer": "Apple",
+    "brand": "Apple",
+    "locale": "pt_BR",
+    "timezone": "America/Sao_Paulo",
+    "screen_resolution": "1179x2556",
+    "battery_level": 0.85,
+    "battery_state": "unplugged",
+    "is_jailbroken_or_rooted": false,
+    "is_emulator": false,
+    "telephony": {
+      "carrier_name": "Claro BR",
+      "mobile_country_code": "724",
+      "mobile_network_code": "05",
+      "iso_country_code": "br",
+      "network_type": "CELLULAR_5G",
+      "is_sim_ready": true,
+      "sim_operator_name": "Claro"
+    }
+  },
+  "location_data": {
+    "status": "SUCCESS",
+    "permission_status": "authorized_when_in_use",
+    "coordinates": {
+      "latitude": -23.55052,
+      "longitude": -46.633308,
+      "accuracy_meters": 5.2,
+      "altitude_meters": 760.4,
+      "altitude_accuracy_meters": 3.0,
+      "heading_degrees": 128.5,
+      "speed_mps": 0.0
+    },
+    "timestamp": "2026-09-20T00:34:59.850Z",
+    "is_mock_location": false
+  },
+  "installed_apps": {
+    "scan_strategy": "targeted_manifest_queries",
+    "total_targets_scanned": 50,
+    "total_detected": 3,
+    "risk_level": "FLAGGED",
+    "has_betting_apps": true,
+    "detected_apps": [
+      {
+        "target_id": "bet365",
+        "app_name": "bet365",
+        "category": "gambling_betting",
+        "detection_identifier": "bet365://",
+        "detection_method": "can_open_url_scheme",
+        "is_detected": true
+      },
+      {
+        "target_id": "novibet",
+        "app_name": "Novibet",
+        "category": "gambling_betting",
+        "detection_identifier": "novibet://",
+        "detection_method": "can_open_url_scheme",
+        "is_detected": true
+      },
+      {
+        "target_id": "sportingbet",
+        "app_name": "Sportingbet Livescore",
+        "category": "gambling_betting",
+        "detection_identifier": "sportingbet://",
+        "detection_method": "can_open_url_scheme",
+        "is_detected": true
+      }
+    ],
+    "unresolved_schemes_count": 8
+  },
+  "security": {
+    "payload_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "signature": "MEQCIC0...",
+    "nonce": "n_8723491028374",
+    "tamper_detected": false
+  }
+}
