@@ -30,7 +30,17 @@ class AppDetectionCollector(private val context: Context) {
             TargetApp("pixbet", "Pixbet", "com.pixbet.app"),
             TargetApp("estrelabet", "EstrelaBet", "com.estrelabet.app"),
             TargetApp("pinnacle", "Pinnacle Sports", "com.pinnacle.sportsbook"),
-            TargetApp("pokerstars", "PokerStars", "com.pyrsoftware.pokerstars")
+            TargetApp("pokerstars", "PokerStars", "com.pyrsoftware.pokerstars"),
+            TargetApp("betway", "Betway", "com.betway.sports"),
+            TargetApp("bwin", "bwin Sportsbook", "com.bwin.sports"),
+            TargetApp("unibet", "Unibet", "com.unibet.sportsbook"),
+            TargetApp("williamhill", "William Hill", "com.williamhill.sports"),
+            TargetApp("paddypower", "Paddy Power", "com.paddypower.sports"),
+            TargetApp("ladbrokes", "Ladbrokes", "com.ladbrokes.sports"),
+            TargetApp("coral", "Coral Sports", "com.coral.sports"),
+            TargetApp("dafabet", "Dafabet", "com.dafabet.sports"),
+            TargetApp("stake", "Stake", "com.stake.app"),
+            TargetApp("blaze", "Blaze", "com.blaze.mobile")
         )
     }
 

@@ -3,6 +3,8 @@ package com.sentinel.sdk.collectors
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.BatteryManager
 import android.os.Build
 import android.provider.Settings
@@ -17,9 +19,9 @@ class DeviceDataCollector(private val context: Context) {
 
     fun collect(): SentinelDeviceData {
         val deviceId = getDeviceIdentifier()
-        val model = Build.MODEL
-        val manufacturer = Build.MANUFACTURER
-        val brand = Build.BRAND
+        val model = Build.MODEL ?: "Unknown Android Device"
+        val manufacturer = Build.MANUFACTURER ?: "Android"
+        val brand = Build.BRAND ?: "Android"
         val locale = Locale.getDefault().toString()
         val timezone = TimeZone.getDefault().id
 
@@ -49,7 +51,7 @@ class DeviceDataCollector(private val context: Context) {
 
     private fun getDeviceIdentifier(): String {
         return Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
-            ?: "unknown_android_device"
+            ?: "00000000-0000-0000-0000-000000000000"
     }
 
     private fun getBatteryInfo(): Pair<Float, String> {
@@ -79,20 +81,39 @@ class DeviceDataCollector(private val context: Context) {
         val isoCountry = tm?.networkCountryIso ?: "xx"
         val isSimReady = tm?.simState == TelephonyManager.SIM_STATE_READY
 
+        val networkType = determineNetworkType()
+
         return SentinelTelephonyData(
             carrierName = carrierName,
             mobileCountryCode = mcc,
             mobileNetworkCode = mnc,
             isoCountryCode = isoCountry,
-            networkType = "CELLULAR_5G",
+            networkType = networkType,
             isSimReady = isSimReady,
             simOperatorName = tm?.simOperatorName?.takeIf { it.isNotBlank() } ?: carrierName
         )
     }
 
-    private fun checkRootHeuristics(): Boolean {
-        val paths = arrayOf(
+    private fun determineNetworkType(): String {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+            ?: return "WIFI"
+
+        val activeNetwork = cm.activeNetwork ?: return "NONE"
+        val caps = cm.getNetworkCapabilities(activeNetwork) ?: return "NONE"
+
+        return when {
+            caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "WIFI"
+            caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "CELLULAR_5G"
+            caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "ETHERNET"
+            caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> "VPN"
+            else -> "UNKNOWN"
+        }
+    }
+
+    public fun checkRootHeuristics(): Boolean {
+        val suspiciousPaths = arrayOf(
             "/system/app/Superuser.apk",
+            "/system/app/Magisk.apk",
             "/sbin/su",
             "/system/bin/su",
             "/system/xbin/su",
@@ -100,23 +121,46 @@ class DeviceDataCollector(private val context: Context) {
             "/data/local/bin/su",
             "/system/sd/xbin/su",
             "/system/bin/failsafe/su",
-            "/data/local/su"
+            "/data/local/su",
+            "/su/bin/su"
         )
-        for (path in paths) {
+        for (path in suspiciousPaths) {
             if (File(path).exists()) return true
         }
+
         val buildTags = Build.TAGS
-        return buildTags != null && buildTags.contains("test-keys")
+        if (buildTags != null && buildTags.contains("test-keys")) {
+            return true
+        }
+
+        // Check if su is in PATH directories
+        val paths = System.getenv("PATH")?.split(":") ?: emptyList()
+        for (p in paths) {
+            val file = File(p, "su")
+            if (file.exists()) return true
+        }
+
+        return false
     }
 
-    private fun checkEmulator(): Boolean {
-        return (Build.FINGERPRINT.startsWith("generic")
-                || Build.FINGERPRINT.startsWith("unknown")
-                || Build.MODEL.contains("google_sdk")
-                || Build.MODEL.contains("Emulator")
-                || Build.MODEL.contains("Android SDK built for x86")
-                || Build.MANUFACTURER.contains("Genymotion")
-                || Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic")
-                || "google_sdk" == Build.PRODUCT)
+    public fun checkEmulator(): Boolean {
+        val fp = Build.FINGERPRINT ?: ""
+        val model = Build.MODEL ?: ""
+        val manufacturer = Build.MANUFACTURER ?: ""
+        val brand = Build.BRAND ?: ""
+        val device = Build.DEVICE ?: ""
+        val product = Build.PRODUCT ?: ""
+        val hardware = Build.HARDWARE ?: ""
+
+        return (fp.startsWith("generic")
+                || fp.startsWith("unknown")
+                || model.contains("google_sdk", ignoreCase = true)
+                || model.contains("Emulator", ignoreCase = true)
+                || model.contains("Android SDK built for x86", ignoreCase = true)
+                || manufacturer.contains("Genymotion", ignoreCase = true)
+                || (brand.startsWith("generic") && device.startsWith("generic"))
+                || "google_sdk" == product
+                || hardware.contains("goldfish", ignoreCase = true)
+                || hardware.contains("ranchu", ignoreCase = true))
     }
 }

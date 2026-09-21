@@ -28,6 +28,16 @@
         <package android:name="com.estrelabet.app" />
         <package android:name="com.pinnacle.sportsbook" />
         <package android:name="com.pyrsoftware.pokerstars" />
+        <package android:name="com.betway.sports" />
+        <package android:name="com.bwin.sports" />
+        <package android:name="com.unibet.sportsbook" />
+        <package android:name="com.williamhill.sports" />
+        <package android:name="com.paddypower.sports" />
+        <package android:name="com.ladbrokes.sports" />
+        <package android:name="com.coral.sports" />
+        <package android:name="com.dafabet.sports" />
+        <package android:name="com.stake.app" />
+        <package android:name="com.blaze.mobile" />
     </queries>
 
 </manifest>
