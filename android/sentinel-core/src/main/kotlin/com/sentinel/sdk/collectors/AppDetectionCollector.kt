@@ -26,7 +26,7 @@ class AppDetectionCollector(private val context: Context) {
             TargetApp("betsson", "Betsson", "com.betsson.sportsbook"),
             TargetApp("rivalo", "Rivalo", "com.rivalo.app"),
             TargetApp("onexbet", "1xBet", "com.onexbet.mobile"),
-            TargetApp("galerabet", "Galera.bet", "com.galerabet.app"),
+            TargetApp("galera_bet", "Galera.bet", "com.galerabet.app"),
             TargetApp("pixbet", "Pixbet", "com.pixbet.app"),
             TargetApp("estrelabet", "EstrelaBet", "com.estrelabet.app"),
             TargetApp("pinnacle", "Pinnacle Sports", "com.pinnacle.sportsbook"),
