@@ -20,7 +20,7 @@ public final class AppDetectionCollector {
         }
     }
 
-    /// Top 50 targeted betting and gambling applications
+    /// Master target catalog of top betting and gambling applications
     public static let defaultTargets: [TargetApp] = [
         TargetApp(id: "bet365", name: "bet365", scheme: "bet365"),
         TargetApp(id: "novibet", name: "Novibet", scheme: "novibet"),
@@ -34,9 +34,19 @@ public final class AppDetectionCollector {
         TargetApp(id: "onexbet", name: "1xBet", scheme: "onexbet"),
         TargetApp(id: "pinnacle", name: "Pinnacle Sports", scheme: "pinnacle"),
         TargetApp(id: "pokerstars", name: "PokerStars", scheme: "pokerstars"),
+        TargetApp(id: "betway", name: "Betway", scheme: "betway"),
+        TargetApp(id: "bwin", name: "bwin Sportsbook", scheme: "bwin"),
+        TargetApp(id: "unibet", name: "Unibet", scheme: "unibet"),
+        TargetApp(id: "williamhill", name: "William Hill", scheme: "williamhill"),
+        TargetApp(id: "paddypower", name: "Paddy Power", scheme: "paddypower"),
+        TargetApp(id: "ladbrokes", name: "Ladbrokes", scheme: "ladbrokes"),
+        TargetApp(id: "coral", name: "Coral Sports", scheme: "coral"),
+        TargetApp(id: "dafabet", name: "Dafabet", scheme: "dafabet"),
+        TargetApp(id: "stake", name: "Stake", scheme: "stake"),
         TargetApp(id: "galera_bet", name: "Galera.bet", scheme: nil),
         TargetApp(id: "pixbet", name: "Pixbet", scheme: nil),
-        TargetApp(id: "estrelabet", name: "EstrelaBet", scheme: nil)
+        TargetApp(id: "estrelabet", name: "EstrelaBet", scheme: nil),
+        TargetApp(id: "blaze", name: "Blaze", scheme: nil)
     ]
 
     public init() {}

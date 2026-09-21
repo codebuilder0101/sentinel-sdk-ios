@@ -24,7 +24,7 @@ public final class PayloadSigner {
         )
     }
 
-    private func sha256Hex(data: Data) -> String {
+    public func sha256Hex(data: Data) -> String {
         #if canImport(CryptoKit)
         let digest = SHA256.hash(data: data)
         return digest.map { String(format: "%02hhx", $0) }.joined()
@@ -33,7 +33,7 @@ public final class PayloadSigner {
         #endif
     }
 
-    private func generateSignature(payloadHash: String, nonce: String) -> String {
+    public func generateSignature(payloadHash: String, nonce: String) -> String {
         let message = "\(payloadHash):\(nonce)"
         guard let messageData = message.data(using: .utf8) else { return "" }
 
@@ -43,12 +43,16 @@ public final class PayloadSigner {
             let mac = HMAC<SHA256>.authenticationCode(for: messageData, using: symmetricKey)
             return Data(mac).base64EncodedString()
         } else {
-            // Default ephemeral digest signature
             let digest = SHA256.hash(data: messageData)
             return Data(digest).base64EncodedString()
         }
         #else
         return messageData.base64EncodedString()
         #endif
+    }
+
+    public func verify(payloadHash: String, nonce: String, signature: String) -> Bool {
+        let expected = generateSignature(payloadHash: payloadHash, nonce: nonce)
+        return expected == signature
     }
 }

@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// Primary facade for the Sentinel SDK on iOS.
 public final class SentinelSDK {
@@ -7,6 +10,7 @@ public final class SentinelSDK {
     public static let version = "1.0.0"
 
     private var apiKey: String?
+    private var environment: String = "production"
     private var isInitialized = false
 
     private let personalDataValidator = PersonalDataValidator()
@@ -17,8 +21,9 @@ public final class SentinelSDK {
     private init() {}
 
     /// Initializes the Sentinel SDK with client API credentials.
-    public func initialize(apiKey: String) {
+    public func initialize(apiKey: String, environment: String = "production") {
         self.apiKey = apiKey
+        self.environment = environment
         self.isInitialized = true
     }
 
@@ -27,15 +32,18 @@ public final class SentinelSDK {
         public let userData: PersonalDataValidator.Input
         public let locationTimeoutSeconds: TimeInterval
         public let wrapper: String
+        public let customTargets: [AppDetectionCollector.TargetApp]?
 
         public init(
             userData: PersonalDataValidator.Input,
             locationTimeoutSeconds: TimeInterval = 5.0,
-            wrapper: String = "native"
+            wrapper: String = "native",
+            customTargets: [AppDetectionCollector.TargetApp]? = nil
         ) {
             self.userData = userData
             self.locationTimeoutSeconds = locationTimeoutSeconds
             self.wrapper = wrapper
+            self.customTargets = customTargets
         }
     }
 
@@ -49,15 +57,16 @@ public final class SentinelSDK {
         // 2. Collect device telemetry
         let deviceData = deviceDataCollector.collect()
 
-        // 3. Collect location
+        // 3. Collect high-accuracy location
         let locationData = await locationCollector.collectLocation(timeoutSeconds: configuration.locationTimeoutSeconds)
 
         // 4. Scan targeted applications on main actor
+        let targets = configuration.customTargets ?? AppDetectionCollector.defaultTargets
         let installedApps = await MainActor.run {
-            self.appDetectionCollector.scan()
+            self.appDetectionCollector.scan(targets: targets)
         }
 
-        let captureDurationMs = Int(Date().timeIntervalSince(startTime) * 1000)
+        let captureDurationMs = max(1, Int(Date().timeIntervalSince(startTime) * 1000))
 
         // 5. Build metadata
         #if os(iOS)
@@ -75,7 +84,7 @@ public final class SentinelSDK {
             captureDurationMs: captureDurationMs
         )
 
-        // 6. Assemble pre-security payload for hashing
+        // 6. Assemble payload data for signing
         let unsignedPayload = PreSecurityPayload(
             metadata: metadata,
             userData: userData,
@@ -85,7 +94,9 @@ public final class SentinelSDK {
         )
 
         let signer = PayloadSigner(secretKey: apiKey)
-        let payloadData = (try? JSONEncoder().encode(unsignedPayload)) ?? Data()
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        let payloadData = (try? encoder.encode(unsignedPayload)) ?? Data()
         let securityData = signer.sign(data: payloadData)
 
         return SentinelPayload(
@@ -98,14 +109,14 @@ public final class SentinelSDK {
         )
     }
 
-    /// Captures and serializes the payload directly to a JSON string.
+    /// Captures and serializes the payload directly to a formatted JSON string.
     public func captureJSON(configuration: CaptureConfiguration) async throws -> String {
         let payload = await capture(configuration: configuration)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = try encoder.encode(payload)
         guard let jsonString = String(data: data, encoding: .utf8) else {
-            throw NSError(domain: "SentinelSDK", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to encode JSON"])
+            throw NSError(domain: "SentinelSDK", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to encode JSON payload"])
         }
         return jsonString
     }
