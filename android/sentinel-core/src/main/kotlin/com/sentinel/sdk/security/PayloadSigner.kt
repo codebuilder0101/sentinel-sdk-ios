@@ -1,6 +1,5 @@
 package com.sentinel.sdk.security
 
-import android.util.Base64
 import com.sentinel.sdk.models.SentinelSecurityData
 import java.security.MessageDigest
 import java.util.UUID
@@ -21,12 +20,12 @@ class PayloadSigner(private val secretKey: String? = null) {
         )
     }
 
-    private fun sha256Hex(bytes: ByteArray): String {
+    fun sha256Hex(bytes: ByteArray): String {
         val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
         return digest.joinToString("") { "%02x".format(it) }
     }
 
-    private fun generateSignature(payloadHash: String, nonce: String): String {
+    fun generateSignature(payloadHash: String, nonce: String): String {
         val message = "$payloadHash:$nonce"
         val messageBytes = message.toByteArray(Charsets.UTF_8)
 
@@ -35,10 +34,15 @@ class PayloadSigner(private val secretKey: String? = null) {
             val mac = Mac.getInstance("HmacSHA256")
             mac.init(keySpec)
             val hmacBytes = mac.doFinal(messageBytes)
-            Base64.encodeToString(hmacBytes, Base64.NO_WRAP)
+            java.util.Base64.getEncoder().encodeToString(hmacBytes)
         } else {
             val digest = MessageDigest.getInstance("SHA-256").digest(messageBytes)
-            Base64.encodeToString(digest, Base64.NO_WRAP)
+            java.util.Base64.getEncoder().encodeToString(digest)
         }
+    }
+
+    fun verify(payloadHash: String, nonce: String, signature: String): Boolean {
+        val expected = generateSignature(payloadHash, nonce)
+        return expected == signature
     }
 }

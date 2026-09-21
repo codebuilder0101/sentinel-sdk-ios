@@ -59,7 +59,11 @@ class LocationCollector(private val context: Context) {
             suspendCancellableCoroutine<Location?> { cont ->
                 val gpsLoc = try { lm.getLastKnownLocation(LocationManager.GPS_PROVIDER) } catch (e: Exception) { null }
                 val netLoc = try { lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER) } catch (e: Exception) { null }
-                val bestLoc = gpsLoc ?: netLoc
+                val passiveLoc = try { lm.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER) } catch (e: Exception) { null }
+
+                // Pick the most accurate or freshest location
+                val candidates = listOfNotNull(gpsLoc, netLoc, passiveLoc)
+                val bestLoc = candidates.minByOrNull { it.accuracy }
                 cont.resume(bestLoc)
             }
         }
