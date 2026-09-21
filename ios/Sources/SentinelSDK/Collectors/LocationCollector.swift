@@ -23,7 +23,7 @@ public final class LocationCollector: NSObject {
 
         guard authStatus == .authorizedWhenInUse || authStatus == .authorizedAlways else {
             return SentinelLocationData(
-                status: authStatus == .notDetermined ? "NOT_DETERMINED" : "PERMISSION_DENIED",
+                status: "PERMISSION_DENIED",
                 permissionStatus: statusString,
                 coordinates: SentinelCoordinates(latitude: 0.0, longitude: 0.0, accuracyMeters: -1.0),
                 timestamp: ISO8601DateFormatter().string(from: Date()),
