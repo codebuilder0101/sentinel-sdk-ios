@@ -3,12 +3,8 @@ import Foundation
 import CoreLocation
 #endif
 
-/// Collects high-accuracy GPS coordinates and location metadata.
+/// Collects high-accuracy GPS coordinates and location telemetry with mock-detection.
 public final class LocationCollector: NSObject {
-
-    #if canImport(CoreLocation)
-    private let locationManager = CLLocationManager()
-    #endif
 
     public override init() {
         super.init()
@@ -16,12 +12,18 @@ public final class LocationCollector: NSObject {
 
     public func collectLocation(timeoutSeconds: TimeInterval = 5.0) async -> SentinelLocationData {
         #if canImport(CoreLocation)
-        let authStatus = CLLocationManager().authorizationStatus
+        let authStatus: CLAuthorizationStatus
+        if #available(iOS 14.0, *) {
+            authStatus = CLLocationManager().authorizationStatus
+        } else {
+            authStatus = CLLocationManager.authorizationStatus()
+        }
+
         let statusString = authorizationStatusString(authStatus)
 
         guard authStatus == .authorizedWhenInUse || authStatus == .authorizedAlways else {
             return SentinelLocationData(
-                status: "PERMISSION_DENIED",
+                status: authStatus == .notDetermined ? "NOT_DETERMINED" : "PERMISSION_DENIED",
                 permissionStatus: statusString,
                 coordinates: SentinelCoordinates(latitude: 0.0, longitude: 0.0, accuracyMeters: -1.0),
                 timestamp: ISO8601DateFormatter().string(from: Date()),
@@ -82,7 +84,7 @@ public final class LocationCollector: NSObject {
     }
 
     #if canImport(CoreLocation)
-    private func authorizationStatusString(_ status: CLAuthorizationStatus) -> String {
+    public func authorizationStatusString(_ status: CLAuthorizationStatus) -> String {
         switch status {
         case .authorizedAlways: return "authorized_always"
         case .authorizedWhenInUse: return "authorized_when_in_use"
@@ -100,23 +102,30 @@ private final class SingleLocationDelegate: NSObject, CLLocationManagerDelegate 
     private let manager = CLLocationManager()
     var onComplete: ((CLLocation?) -> Void)?
     private var timer: Timer?
+    private var isCompleted = false
 
     func start(timeoutSeconds: TimeInterval) {
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBest
+        manager.distanceFilter = kCLDistanceFilterNone
         manager.requestLocation()
 
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
             self.timer = Timer.scheduledTimer(withTimeInterval: timeoutSeconds, repeats: false) { [weak self] _ in
-                self?.manager.stopUpdatingLocation()
-                let completion = self?.onComplete
-                self?.onComplete = nil
+                guard let self = self, !self.isCompleted else { return }
+                self.isCompleted = true
+                self.manager.stopUpdatingLocation()
+                let completion = self.onComplete
+                self.onComplete = nil
                 completion?(nil)
             }
         }
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard !isCompleted else { return }
+        isCompleted = true
         timer?.invalidate()
         let completion = onComplete
         onComplete = nil
@@ -124,6 +133,8 @@ private final class SingleLocationDelegate: NSObject, CLLocationManagerDelegate 
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        guard !isCompleted else { return }
+        isCompleted = true
         timer?.invalidate()
         let completion = onComplete
         onComplete = nil
