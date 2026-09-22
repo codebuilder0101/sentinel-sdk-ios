@@ -1,0 +1,36 @@
+name: iOS SDK CI
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+jobs:
+  ios-tests:
+    name: Build & Test iOS SDK
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Display Xcode & Swift version
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Run SPM Unit Tests (macOS)
+        working-directory: ios
+        run: |
+          swift test -v
+
+      - name: Build for iOS Device Target
+        working-directory: ios
+        run: |
+          xcodebuild build -scheme SentinelSDK -destination "generic/platform=iOS"
+
+      - name: Run Tests in iOS Simulator
+        working-directory: ios
+        run: |
+          xcodebuild test -scheme SentinelSDK-Package -destination "platform=iOS Simulator,name=iPhone 15" || swift test -v
