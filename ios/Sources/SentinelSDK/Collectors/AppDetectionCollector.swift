@@ -56,7 +56,6 @@ public final class AppDetectionCollector {
         var detectedList: [SentinelDetectedApp] = []
         var unresolvedCount = 0
 
-        #if os(iOS)
         for target in targets {
             guard let scheme = target.scheme, !scheme.isEmpty else {
                 unresolvedCount += 1
@@ -69,6 +68,7 @@ public final class AppDetectionCollector {
                 continue
             }
 
+            #if os(iOS)
             let canOpen = UIApplication.shared.canOpenURL(url)
             if canOpen {
                 detectedList.append(SentinelDetectedApp(
@@ -80,8 +80,8 @@ public final class AppDetectionCollector {
                     isDetected: true
                 ))
             }
+            #endif
         }
-        #endif
 
         let hasBetting = !detectedList.isEmpty
         let riskLevel = hasBetting ? "FLAGGED" : "CLEAN"
