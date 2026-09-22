@@ -199,12 +199,20 @@ class SentinelSDKTests {
             )
         )
 
-        val json = Json { prettyPrint = true }
-        val serialized = json.encodeToString(payload)
+        val serialized = SentinelSDK.prettyJson.encodeToString(payload)
 
         assertTrue(serialized.contains("\"sdk_version\": \"1.0.0\""))
         assertTrue(serialized.contains("\"platform\": \"android\""))
         assertTrue(serialized.contains("\"full_name\": \"Maria Oliveira\""))
         assertTrue(serialized.contains("\"carrier_name\": \"Claro BR\""))
     }
+
+    @Test
+    fun testPayloadSignerTamperFlag() {
+        val signer = PayloadSigner("secret_key_123")
+        val securityData = signer.sign("{\"data\":\"val\"}", tamperDetected = true)
+        assertTrue(securityData.tamperDetected)
+        assertTrue(signer.verify(securityData.payloadHash, securityData.nonce, securityData.signature))
+    }
 }
+
