@@ -35,6 +35,4 @@ jobs:
         run: |
           SIM_NAME=$(xcrun simctl list devices available | grep -E "iPhone" | head -n 1 | sed -E 's/^[[:space:]]*([^(]+).*/\1/' | xargs)
           echo "Selected iOS Simulator: $SIM_NAME"
-          xcodebuild test -scheme SentinelSDK-Package -destination "platform=iOS Simulator,name=$SIM_NAME" || \
-          xcodebuild test -scheme SentinelSDK -destination "platform=iOS Simulator,name=$SIM_NAME" || \
-          xcodebuild test -scheme SentinelSDK -destination "generic/platform=iOS Simulator"
+          xcodebuild test -scheme SentinelSDK -destination "platform=iOS Simulator,name=$SIM_NAME"
