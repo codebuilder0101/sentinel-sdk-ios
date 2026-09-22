@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "sentinel-sdk-android"
 include(":sentinel-core")
+include(":app")

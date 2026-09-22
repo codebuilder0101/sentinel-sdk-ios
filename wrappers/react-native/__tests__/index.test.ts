@@ -76,7 +76,7 @@ describe('Sentinel React Native Wrapper Types', () => {
       installed_apps: {
         scan_strategy: 'targeted_manifest_queries',
         total_targets_scanned: 25,
-        totalDetected: 0,
+        total_detected: 0,
         risk_level: 'CLEAN',
         has_betting_apps: false,
         detected_apps: [],

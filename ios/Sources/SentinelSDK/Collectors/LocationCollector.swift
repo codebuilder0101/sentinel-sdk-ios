@@ -13,17 +13,33 @@ public final class LocationCollector: NSObject {
     public func collectLocation(timeoutSeconds: TimeInterval = 5.0) async -> SentinelLocationData {
         #if canImport(CoreLocation)
         let authStatus: CLAuthorizationStatus
+        #if os(iOS)
         if #available(iOS 14.0, *) {
             authStatus = CLLocationManager().authorizationStatus
         } else {
             authStatus = CLLocationManager.authorizationStatus()
         }
+        #elseif os(macOS)
+        if #available(macOS 11.0, *) {
+            authStatus = CLLocationManager().authorizationStatus
+        } else {
+            authStatus = CLLocationManager.authorizationStatus()
+        }
+        #else
+        authStatus = CLLocationManager.authorizationStatus()
+        #endif
 
         let statusString = authorizationStatusString(authStatus)
 
-        guard authStatus == .authorizedWhenInUse || authStatus == .authorizedAlways else {
+        #if os(iOS)
+        let isAuthorized = (authStatus == .authorizedWhenInUse || authStatus == .authorizedAlways)
+        #else
+        let isAuthorized = (authStatus == .authorizedAlways)
+        #endif
+
+        guard isAuthorized else {
             return SentinelLocationData(
-                status: authStatus == .notDetermined ? "NOT_DETERMINED" : "PERMISSION_DENIED",
+                status: "PERMISSION_DENIED",
                 permissionStatus: statusString,
                 coordinates: SentinelCoordinates(latitude: 0.0, longitude: 0.0, accuracyMeters: -1.0),
                 timestamp: ISO8601DateFormatter().string(from: Date()),
@@ -37,11 +53,21 @@ public final class LocationCollector: NSObject {
                 let timestampStr = ISO8601DateFormatter().string(from: location?.timestamp ?? Date())
                 if let loc = location {
                     let isMock: Bool
+                    #if os(iOS)
                     if #available(iOS 15.0, *) {
                         isMock = loc.sourceInformation?.isSimulatedBySoftware ?? false
                     } else {
                         isMock = false
                     }
+                    #elseif os(macOS)
+                    if #available(macOS 12.0, *) {
+                        isMock = loc.sourceInformation?.isSimulatedBySoftware ?? false
+                    } else {
+                        isMock = false
+                    }
+                    #else
+                    isMock = false
+                    #endif
 
                     let coords = SentinelCoordinates(
                         latitude: loc.coordinate.latitude,
@@ -87,7 +113,9 @@ public final class LocationCollector: NSObject {
     public func authorizationStatusString(_ status: CLAuthorizationStatus) -> String {
         switch status {
         case .authorizedAlways: return "authorized_always"
+        #if os(iOS)
         case .authorizedWhenInUse: return "authorized_when_in_use"
+        #endif
         case .denied: return "denied"
         case .restricted: return "restricted"
         case .notDetermined: return "not_determined"

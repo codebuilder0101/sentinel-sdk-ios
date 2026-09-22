@@ -55,7 +55,9 @@ public final class SentinelSDK {
         let userData = personalDataValidator.validate(input: configuration.userData)
 
         // 2. Collect device telemetry
-        let deviceData = deviceDataCollector.collect()
+        let deviceData = await MainActor.run {
+            self.deviceDataCollector.collect()
+        }
 
         // 3. Collect high-accuracy location
         let locationData = await locationCollector.collectLocation(timeoutSeconds: configuration.locationTimeoutSeconds)
@@ -70,7 +72,7 @@ public final class SentinelSDK {
 
         // 5. Build metadata
         #if os(iOS)
-        let osVersion = UIDevice.current.systemVersion
+        let osVersion = await MainActor.run { UIDevice.current.systemVersion }
         #else
         let osVersion = "unknown"
         #endif
