@@ -3,6 +3,7 @@ package com.sentinel.sdk.collectors
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.BatteryManager
@@ -11,7 +12,9 @@ import android.provider.Settings
 import android.telephony.TelephonyManager
 import com.sentinel.sdk.models.SentinelDeviceData
 import com.sentinel.sdk.models.SentinelTelephonyData
+import java.io.BufferedReader
 import java.io.File
+import java.io.InputStreamReader
 import java.util.Locale
 import java.util.TimeZone
 
@@ -50,25 +53,32 @@ class DeviceDataCollector(private val context: Context) {
     }
 
     private fun getDeviceIdentifier(): String {
-        return Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
-            ?: "00000000-0000-0000-0000-000000000000"
+        return try {
+            Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+                ?: "00000000-0000-0000-0000-000000000000"
+        } catch (_: Exception) {
+            "00000000-0000-0000-0000-000000000000"
+        }
     }
 
     private fun getBatteryInfo(): Pair<Float, String> {
-        val batteryIntent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-        val level = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
-        val scale = batteryIntent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
-        val batteryPct = if (level >= 0 && scale > 0) level / scale.toFloat() else 1.0f
+        return try {
+            val batteryIntent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            val level = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+            val scale = batteryIntent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
+            val batteryPct = if (level >= 0 && scale > 0) level / scale.toFloat() else 1.0f
 
-        val status = batteryIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
-        val state = when (status) {
-            BatteryManager.BATTERY_STATUS_CHARGING -> "charging"
-            BatteryManager.BATTERY_STATUS_FULL -> "full"
-            BatteryManager.BATTERY_STATUS_DISCHARGING, BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "unplugged"
-            else -> "unknown"
+            val status = batteryIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
+            val state = when (status) {
+                BatteryManager.BATTERY_STATUS_CHARGING -> "charging"
+                BatteryManager.BATTERY_STATUS_FULL -> "full"
+                BatteryManager.BATTERY_STATUS_DISCHARGING, BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "unplugged"
+                else -> "unknown"
+            }
+            Pair(batteryPct, state)
+        } catch (_: Exception) {
+            Pair(1.0f, "unknown")
         }
-
-        return Pair(batteryPct, state)
     }
 
     private fun collectTelephony(): SentinelTelephonyData {
@@ -78,7 +88,7 @@ class DeviceDataCollector(private val context: Context) {
 
         val mcc = if (operator.length >= 3) operator.substring(0, 3) else "000"
         val mnc = if (operator.length > 3) operator.substring(3) else "00"
-        val isoCountry = tm?.networkCountryIso ?: "xx"
+        val isoCountry = tm?.networkCountryIso?.takeIf { it.isNotBlank() } ?: "xx"
         val isSimReady = tm?.simState == TelephonyManager.SIM_STATE_READY
 
         val networkType = determineNetworkType()
@@ -96,14 +106,14 @@ class DeviceDataCollector(private val context: Context) {
 
     private fun determineNetworkType(): String {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-            ?: return "WIFI"
+            ?: return "NONE"
 
         val activeNetwork = cm.activeNetwork ?: return "NONE"
         val caps = cm.getNetworkCapabilities(activeNetwork) ?: return "NONE"
 
         return when {
             caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "WIFI"
-            caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "CELLULAR_5G"
+            caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "CELLULAR"
             caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "ETHERNET"
             caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> "VPN"
             else -> "UNKNOWN"
@@ -122,10 +132,14 @@ class DeviceDataCollector(private val context: Context) {
             "/system/sd/xbin/su",
             "/system/bin/failsafe/su",
             "/data/local/su",
-            "/su/bin/su"
+            "/su/bin/su",
+            "/data/adb/ksu",
+            "/data/adb/magisk"
         )
         for (path in suspiciousPaths) {
-            if (File(path).exists()) return true
+            try {
+                if (File(path).exists()) return true
+            } catch (_: Exception) {}
         }
 
         val buildTags = Build.TAGS
@@ -136,9 +150,40 @@ class DeviceDataCollector(private val context: Context) {
         // Check if su is in PATH directories
         val paths = System.getenv("PATH")?.split(":") ?: emptyList()
         for (p in paths) {
-            val file = File(p, "su")
-            if (file.exists()) return true
+            try {
+                val file = File(p, "su")
+                if (file.exists()) return true
+            } catch (_: Exception) {}
         }
+
+        // Check for root management packages
+        val rootPackages = listOf(
+            "com.topjohnwu.magisk",
+            "io.github.vvb2060.magisk",
+            "me.weishu.kernelsu",
+            "com.noshufou.android.su",
+            "com.koushikdutta.superuser",
+            "com.thirdparty.superuser",
+            "com.kingroot.kinguser"
+        )
+        val pm = context.packageManager
+        for (pkg in rootPackages) {
+            try {
+                pm.getPackageInfo(pkg, 0)
+                return true
+            } catch (_: PackageManager.NameNotFoundException) {
+            } catch (_: Exception) {}
+        }
+
+        // Check executing which su
+        try {
+            val process = Runtime.getRuntime().exec(arrayOf("which", "su"))
+            val reader = BufferedReader(InputStreamReader(process.inputStream))
+            val line = reader.readLine()
+            reader.close()
+            process.destroy()
+            if (!line.isNullOrBlank()) return true
+        } catch (_: Exception) {}
 
         return false
     }
@@ -160,7 +205,12 @@ class DeviceDataCollector(private val context: Context) {
                 || manufacturer.contains("Genymotion", ignoreCase = true)
                 || (brand.startsWith("generic") && device.startsWith("generic"))
                 || "google_sdk" == product
+                || product.contains("sdk_gphone", ignoreCase = true)
+                || product.contains("vbox86p", ignoreCase = true)
                 || hardware.contains("goldfish", ignoreCase = true)
-                || hardware.contains("ranchu", ignoreCase = true))
+                || hardware.contains("ranchu", ignoreCase = true)
+                || hardware.contains("vbox86", ignoreCase = true)
+                || hardware.contains("cuttlefish", ignoreCase = true))
     }
 }
+

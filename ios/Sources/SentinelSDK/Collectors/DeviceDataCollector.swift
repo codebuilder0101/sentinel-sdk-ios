@@ -120,12 +120,15 @@ public final class DeviceDataCollector {
     }
 
     private func determineNetworkType() -> String {
-        #if canImport(CoreTelephony)
+        #if os(iOS) && canImport(CoreTelephony)
         let networkInfo = CTTelephonyNetworkInfo()
         if let radioTechnology = networkInfo.serviceCurrentRadioAccessTechnology?.values.first {
+            if #available(iOS 14.1, *) {
+                if radioTechnology == CTRadioAccessTechnologyNR || radioTechnology == CTRadioAccessTechnologyNRNSA {
+                    return "CELLULAR_5G"
+                }
+            }
             switch radioTechnology {
-            case CTRadioAccessTechnologyNR, CTRadioAccessTechnologyNRNSA:
-                return "CELLULAR_5G"
             case CTRadioAccessTechnologyLTE:
                 return "CELLULAR_4G"
             case CTRadioAccessTechnologyWCDMA, CTRadioAccessTechnologyHSDPA, CTRadioAccessTechnologyHSUPA:

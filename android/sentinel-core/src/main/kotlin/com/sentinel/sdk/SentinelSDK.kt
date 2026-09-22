@@ -14,7 +14,8 @@ import com.sentinel.sdk.models.SentinelPayload
 import com.sentinel.sdk.models.SentinelUserData
 import com.sentinel.sdk.security.PayloadSigner
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -33,9 +34,29 @@ class SentinelSDK private constructor(private val context: Context) {
         @Volatile
         private var INSTANCE: SentinelSDK? = null
 
+        val compactJson = Json {
+            encodeDefaults = true
+            ignoreUnknownKeys = true
+            prettyPrint = false
+        }
+
+        val prettyJson = Json {
+            encodeDefaults = true
+            ignoreUnknownKeys = true
+            prettyPrint = true
+        }
+
+        fun formatJson(payload: SentinelPayload, prettyPrint: Boolean = true): String {
+            val serializer = if (prettyPrint) prettyJson else compactJson
+            return serializer.encodeToString(payload)
+        }
+
         fun initialize(context: Context, apiKey: String, environment: String = "production"): SentinelSDK {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: SentinelSDK(context.applicationContext).also {
+            return INSTANCE?.apply {
+                this.apiKey = apiKey
+                this.environment = environment
+            } ?: synchronized(this) {
+                INSTANCE ?: SentinelSDK(context.applicationContext ?: context).also {
                     it.apiKey = apiKey
                     it.environment = environment
                     it.isInitialized = true
@@ -46,6 +67,12 @@ class SentinelSDK private constructor(private val context: Context) {
 
         fun getInstance(): SentinelSDK {
             return INSTANCE ?: throw IllegalStateException("SentinelSDK must be initialized first via SentinelSDK.initialize(context, apiKey).")
+        }
+
+        fun resetForTesting() {
+            synchronized(this) {
+                INSTANCE = null
+            }
         }
     }
 
@@ -58,12 +85,6 @@ class SentinelSDK private constructor(private val context: Context) {
     private val locationCollector = LocationCollector(context)
     private val appDetectionCollector = AppDetectionCollector(context)
 
-    private val json = Json {
-        prettyPrint = true
-        encodeDefaults = true
-        ignoreUnknownKeys = true
-    }
-
     data class CaptureOptions(
         val userData: PersonalDataValidator.Input,
         val locationTimeoutMs: Long = 5000L,
@@ -71,21 +92,25 @@ class SentinelSDK private constructor(private val context: Context) {
         val customTargets: List<AppDetectionCollector.TargetApp>? = null
     )
 
-    suspend fun capture(options: CaptureOptions): SentinelPayload = withContext(Dispatchers.IO) {
+    suspend fun capture(options: CaptureOptions): SentinelPayload = coroutineScope {
         val startTime = System.currentTimeMillis()
 
-        // 1. Personal Data Validation
+        // 1. Personal Data Validation (CPU-bound)
         val userData = personalDataValidator.validate(options.userData)
 
-        // 2. Device Data Collection
-        val deviceData = deviceDataCollector.collect()
-
-        // 3. Location Capture
-        val locationData = locationCollector.collectLocation(timeoutMs = options.locationTimeoutMs)
-
-        // 4. Targeted App Screening
+        // 2. Parallel Telemetry Collectors
+        val deviceDataDeferred = async(Dispatchers.IO) { deviceDataCollector.collect() }
+        val locationDataDeferred = async(Dispatchers.IO) {
+            locationCollector.collectLocation(timeoutMs = options.locationTimeoutMs)
+        }
         val targets = options.customTargets ?: AppDetectionCollector.DEFAULT_TARGETS
-        val installedApps = appDetectionCollector.scan(targets)
+        val installedAppsDeferred = async(Dispatchers.IO) {
+            appDetectionCollector.scan(targets)
+        }
+
+        val deviceData = deviceDataDeferred.await()
+        val locationData = locationDataDeferred.await()
+        val installedApps = installedAppsDeferred.await()
 
         val duration = maxOf(1L, System.currentTimeMillis() - startTime)
         val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
@@ -103,7 +128,7 @@ class SentinelSDK private constructor(private val context: Context) {
             captureDurationMs = duration
         )
 
-        // Security signature
+        // Security signature (Canonical compact JSON)
         val unsignedPayload = PreSecurityPayload(
             metadata = metadata,
             userData = userData,
@@ -112,9 +137,10 @@ class SentinelSDK private constructor(private val context: Context) {
             installedApps = installedApps
         )
 
+        val isTampered = deviceData.isJailbrokenOrRooted || locationData.isMockLocation
         val signer = PayloadSigner(apiKey)
-        val unsignedJson = json.encodeToString(unsignedPayload)
-        val securityData = signer.sign(unsignedJson)
+        val unsignedCanonicalJson = compactJson.encodeToString(unsignedPayload)
+        val securityData = signer.sign(unsignedCanonicalJson, tamperDetected = isTampered)
 
         SentinelPayload(
             metadata = metadata,
@@ -126,9 +152,10 @@ class SentinelSDK private constructor(private val context: Context) {
         )
     }
 
-    suspend fun captureJson(options: CaptureOptions): String {
+    suspend fun captureJson(options: CaptureOptions, prettyPrint: Boolean = true): String {
         val payload = capture(options)
-        return json.encodeToString(payload)
+        val serializer = if (prettyPrint) prettyJson else compactJson
+        return serializer.encodeToString(payload)
     }
 }
 
@@ -140,3 +167,4 @@ private data class PreSecurityPayload(
     @SerialName("location_data") val locationData: SentinelLocationData,
     @SerialName("installed_apps") val installedApps: SentinelInstalledApps
 )
+

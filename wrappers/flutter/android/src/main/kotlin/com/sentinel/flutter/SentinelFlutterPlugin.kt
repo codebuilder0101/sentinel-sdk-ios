@@ -27,8 +27,9 @@ class SentinelFlutterPlugin: FlutterPlugin, MethodCallHandler {
         when (call.method) {
             "initialize" -> {
                 val apiKey = call.argument<String>("apiKey") ?: ""
+                val environment = call.argument<String>("environment") ?: "production"
                 try {
-                    SentinelSDK.initialize(context, apiKey)
+                    SentinelSDK.initialize(context, apiKey, environment)
                     result.success(true)
                 } catch (e: Exception) {
                     result.error("INIT_ERROR", e.message, null)

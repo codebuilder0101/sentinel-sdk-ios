@@ -1,0 +1,38 @@
+name: iOS SDK CI
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+jobs:
+  ios-tests:
+    name: Build & Test iOS SDK
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Display Xcode & Swift version
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Run SPM Unit Tests (macOS)
+        working-directory: ios
+        run: |
+          swift test -v
+
+      - name: Build for iOS Device Target
+        working-directory: ios
+        run: |
+          xcodebuild build -scheme SentinelSDK -destination "generic/platform=iOS"
+
+      - name: Run Tests in iOS Simulator
+        working-directory: ios
+        run: |
+          SIM_NAME=$(xcrun simctl list devices available | grep -E "iPhone" | head -n 1 | sed -E 's/^[[:space:]]*([^(]+).*/\1/' | xargs)
+          echo "Selected iOS Simulator: $SIM_NAME"
+          xcodebuild test -scheme SentinelSDK -destination "platform=iOS Simulator,name=$SIM_NAME"

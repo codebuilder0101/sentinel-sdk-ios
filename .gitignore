@@ -27,6 +27,7 @@ local.properties
 
 # React Native & Node
 node_modules/
+wrappers/react-native/lib/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
