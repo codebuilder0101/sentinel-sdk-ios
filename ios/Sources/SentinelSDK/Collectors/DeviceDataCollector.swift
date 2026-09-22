@@ -120,7 +120,7 @@ public final class DeviceDataCollector {
     }
 
     private func determineNetworkType() -> String {
-        #if canImport(CoreTelephony)
+        #if os(iOS) && canImport(CoreTelephony)
         let networkInfo = CTTelephonyNetworkInfo()
         if let radioTechnology = networkInfo.serviceCurrentRadioAccessTechnology?.values.first {
             switch radioTechnology {
