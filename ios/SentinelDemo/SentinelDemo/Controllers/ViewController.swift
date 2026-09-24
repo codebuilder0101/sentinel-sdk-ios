@@ -2,7 +2,7 @@ import UIKit
 import CoreLocation
 import SentinelSDK
 
-/// iOS Native Demo ViewController for testing and live telemetry verification.
+/// iOS Native Demo ViewController mirroring the Android Sample App for testing and verification.
 public class ViewController: UIViewController, CLLocationManagerDelegate, UITextFieldDelegate {
 
     // MARK: - Color Palette
@@ -10,6 +10,7 @@ public class ViewController: UIViewController, CLLocationManagerDelegate, UIText
     private let colorCardBg = UIColor(red: 19/255, green: 27/255, blue: 46/255, alpha: 1.0)          // #131B2E
     private let colorBorder = UIColor(red: 30/255, green: 41/255, blue: 59/255, alpha: 1.0)          // #1E293B
     private let colorAccent = UIColor(red: 59/255, green: 130/255, blue: 246/255, alpha: 1.0)        // #3B82F6
+    private let colorAccentDark = UIColor(red: 29/255, green: 78/255, blue: 216/255, alpha: 1.0)    // #1D4ED8
     private let colorTextPrimary = UIColor(red: 248/255, green: 250/255, blue: 252/255, alpha: 1.0) // #F8FAFC
     private let colorTextSecondary = UIColor(red: 148/255, green: 163/255, blue: 184/255, alpha: 1.0) // #94A3B8
     private let colorSuccess = UIColor(red: 16/255, green: 185/255, blue: 129/255, alpha: 1.0)       // #10B981
@@ -156,6 +157,7 @@ public class ViewController: UIViewController, CLLocationManagerDelegate, UIText
         configureTextField(emailField, placeholder: "Email Address", text: "carlos.silva@example.com", keyboardType: .emailAddress)
         configureTextField(phoneNumberField, placeholder: "Phone Number (E.164)", text: "+5511999998888", keyboardType: .phonePad)
 
+        // Presets Container
         let presetStack = UIStackView(arrangedSubviews: [validPresetButton, invalidPresetButton])
         presetStack.axis = .horizontal
         presetStack.spacing = 10
@@ -393,6 +395,7 @@ public class ViewController: UIViewController, CLLocationManagerDelegate, UIText
         textField.delegate = self
         textField.translatesAutoresizingMaskIntoConstraints = false
 
+        // Padding
         let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 44))
         textField.leftView = paddingView
         textField.leftViewMode = .always
@@ -456,6 +459,7 @@ public class ViewController: UIViewController, CLLocationManagerDelegate, UIText
     @objc private func handleCaptureTap() {
         dismissKeyboard()
 
+        // Check location permission
         let authStatus: CLAuthorizationStatus
         if #available(iOS 14.0, *) {
             authStatus = locationManager.authorizationStatus

@@ -36,15 +36,19 @@ sentinel-sdk-ios/
 │   ├── ARCHITECTURE.md           # Architecture & Data Flow
 │   ├── COMPLIANCE.md             # Apple & Google Store Compliance Strategy
 │   └── INTEGRATION.md            # Host App Integration Guide
-├── ios/                          # Native iOS SDK (Swift)
+├── ios/                          # Native iOS SDK & Demo App (Swift)
 │   ├── Package.swift             # SPM Manifest
 │   ├── Sources/SentinelSDK/      # SDK Core, Collectors, Models & Security
 │   ├── Tests/SentinelSDKTests/   # Unit & Integration Tests
+│   ├── SentinelDemo/             # iOS Sample Testing App (UIKit & SwiftUI)
+│   │   ├── SentinelDemo.xcodeproj/
+│   │   └── SentinelDemo/         # Views, Controllers, App Delegates & Info.plist
 │   └── scripts/                  # XCFramework Build Automation
-├── android/                      # Native Android SDK (Kotlin)
+├── android/                      # Native Android SDK & Demo App (Kotlin)
 │   ├── sentinel-core/            # Android Library Module
 │   │   ├── src/main/AndroidManifest.xml # Target <queries> declaration
 │   │   └── src/main/kotlin/com/sentinel/sdk/
+│   ├── app/                      # Android Sample Testing App Module
 │   └── build.gradle.kts
 └── wrappers/                     # Cross-Platform Bridges
     ├── react-native/             # React Native Bridge (TS + Native Modules)

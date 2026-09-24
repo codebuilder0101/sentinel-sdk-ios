@@ -135,3 +135,35 @@ class MyApp extends StatelessWidget {
   }
 }
 ```
+
+---
+
+## 4. Native Sample Apps for Verification & Testing
+
+The repository provides fully functional native testing applications for both **iOS** and **Android** to verify telemetry collection, personal data validation, location services, and targeted betting app detection.
+
+### 4.1 iOS Testing App (`ios/SentinelDemo`)
+- **Location**: [`ios/SentinelDemo/`](file:///d:/Projects/sentinel-sdk-ios/ios/SentinelDemo/)
+- **Xcode Project**: Open `ios/SentinelDemo/SentinelDemo.xcodeproj` in Xcode 15+.
+- **Features**:
+  - Valid and Invalid Identity Data Presets.
+  - Native runtime location permission handling (`CLLocationManager`).
+  - Target schemes screening (`canOpenURL` with declared `LSApplicationQueriesSchemes`).
+  - Live Telemetry & Risk Summary badge metrics.
+  - Formatted JSON inspector with one-click clipboard copying and iOS Share sheet.
+  - Dual implementations: UIKit (`ViewController.swift`) and SwiftUI (`ContentView.swift`).
+
+### 4.2 Android Testing App (`android/app`)
+- **Location**: [`android/app/`](file:///d:/Projects/sentinel-sdk-ios/android/app/)
+- **Run with Gradle**:
+  ```bash
+  cd android
+  ./gradlew :app:installDebug
+  ```
+- **Features**:
+  - Valid and Invalid Identity Data Presets.
+  - Runtime permissions launcher for Fine & Coarse GPS.
+  - Google Play-compliant `<queries>` risk screening without `QUERY_ALL_PACKAGES`.
+  - Live Telemetry & Risk Summary badge metrics.
+  - Formatted JSON inspector with clipboard copying.
+
