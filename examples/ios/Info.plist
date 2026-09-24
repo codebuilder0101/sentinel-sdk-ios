@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Sentinel requires precise location to verify regional compliance and fraud prevention.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Sentinel requires precise location to verify regional compliance and fraud prevention.</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>bet365</string>
+		<string>novibet</string>
+		<string>sportingbet</string>
+		<string>superbet</string>
+		<string>kto</string>
+		<string>betano</string>
+		<string>betfair</string>
+		<string>betsson</string>
+		<string>rivalo</string>
+		<string>onexbet</string>
+		<string>pinnacle</string>
+		<string>pokerstars</string>
+		<string>betway</string>
+		<string>bwin</string>
+		<string>unibet</string>
+		<string>williamhill</string>
+		<string>paddypower</string>
+		<string>ladbrokes</string>
+		<string>coral</string>
+		<string>dafabet</string>
+		<string>stake</string>
+	</array>
+</dict>
+</plist>

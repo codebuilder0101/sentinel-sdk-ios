@@ -23,6 +23,35 @@ final class SentinelSDKTests: XCTestCase {
         XCTAssertTrue(result.validation.validationErrors.isEmpty)
     }
 
+    func testDemoAppPresetsValidation() {
+        let validator = PersonalDataValidator()
+
+        // 1. Valid Preset used in Demo App
+        let validPreset = PersonalDataValidator.Input(
+            fullName: "Carlos Eduardo da Silva",
+            documentId: "123.456.789-09",
+            email: "carlos.silva@example.com",
+            phoneNumber: "+5511999998888"
+        )
+        let validResult = validator.validate(input: validPreset)
+        XCTAssertTrue(validResult.validation.isValid)
+        XCTAssertTrue(validResult.validation.validationErrors.isEmpty)
+
+        // 2. Invalid Preset used in Demo App
+        let invalidPreset = PersonalDataValidator.Input(
+            fullName: "Carlos",
+            documentId: "111.111.111-11",
+            email: "invalid-email-address",
+            phoneNumber: "1234"
+        )
+        let invalidResult = validator.validate(input: invalidPreset)
+        XCTAssertFalse(invalidResult.validation.isValid)
+        XCTAssertFalse(invalidResult.validation.nameFormatValid)
+        XCTAssertFalse(invalidResult.validation.documentValid)
+        XCTAssertFalse(invalidResult.validation.phoneFormatValid)
+        XCTAssertEqual(invalidResult.validation.validationErrors.count, 4)
+    }
+
     func testPersonalDataValidationCPFAlgorithm() {
         let validator = PersonalDataValidator()
 
@@ -132,24 +161,25 @@ final class SentinelSDKTests: XCTestCase {
 
     func testSDKCaptureJSONOutput() async throws {
         let sdk = SentinelSDK.shared
-        sdk.initialize(apiKey: "test_api_key", environment: "staging")
+        sdk.initialize(apiKey: "test_enterprise_api_key_12345", environment: "sandbox")
 
         let config = SentinelSDK.CaptureConfiguration(
             userData: PersonalDataValidator.Input(
-                fullName: "Maria Oliveira",
-                documentId: "52998224725",
-                email: "maria@example.com",
-                phoneNumber: "+5511988887777"
+                fullName: "Carlos Eduardo da Silva",
+                documentId: "123.456.789-09",
+                email: "carlos.silva@example.com",
+                phoneNumber: "+5511999998888"
             ),
             locationTimeoutSeconds: 1.0,
-            wrapper: "native"
+            wrapper: "native_ios_demo"
         )
 
         let jsonString = try await sdk.captureJSON(configuration: config)
 
         XCTAssertFalse(jsonString.isEmpty)
         XCTAssertTrue(jsonString.contains("\"sdk_version\" : \"1.0.0\""))
-        XCTAssertTrue(jsonString.contains("\"full_name\" : \"Maria Oliveira\""))
+        XCTAssertTrue(jsonString.contains("\"full_name\" : \"Carlos Eduardo da Silva\""))
+        XCTAssertTrue(jsonString.contains("\"wrapper\" : \"native_ios_demo\""))
         XCTAssertTrue(jsonString.contains("\"payload_hash\""))
         XCTAssertTrue(jsonString.contains("\"signature\""))
     }
