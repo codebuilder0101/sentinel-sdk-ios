@@ -23,11 +23,11 @@ public final class AppDetectionCollector {
     /// Master target catalog of top betting and gambling applications
     public static let defaultTargets: [TargetApp] = [
         TargetApp(id: "bet365", name: "bet365", scheme: "bet365"),
+        TargetApp(id: "superbets", name: "Superbet", scheme: "superbet"),
+        TargetApp(id: "sportybet", name: "SportyBet", scheme: "sportybet"),
+        TargetApp(id: "betano", name: "Betano", scheme: "betano"),
         TargetApp(id: "novibet", name: "Novibet", scheme: "novibet"),
         TargetApp(id: "sportingbet", name: "Sportingbet Livescore", scheme: "sportingbet"),
-        TargetApp(id: "superbets", name: "Superbets", scheme: "superbet"),
-        TargetApp(id: "kto", name: "KTO", scheme: "kto"),
-        TargetApp(id: "betano", name: "Betano", scheme: "betano"),
         TargetApp(id: "betfair", name: "Betfair", scheme: "betfair"),
         TargetApp(id: "betsson", name: "Betsson", scheme: "betsson"),
         TargetApp(id: "rivalo", name: "Rivalo", scheme: "rivalo"),

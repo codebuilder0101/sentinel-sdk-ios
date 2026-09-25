@@ -12,11 +12,16 @@
     -->
     <queries>
         <package android:name="com.bet365.app" />
+        <package android:name="com.bet365Wrapper.Bet365_Application" />
         <package android:name="gr.novibet" />
         <package android:name="com.sportingbet.sportsbook" />
         <package android:name="com.superbet.app" />
+        <package android:name="ro.superbet.app" />
+        <package android:name="com.sportybet.android" />
+        <package android:name="com.sportybet.app" />
         <package android:name="com.kto.sports" />
         <package android:name="com.betano.app" />
+        <package android:name="de.betano.sports" />
         <package android:name="com.betfair.sportsbook" />
         <package android:name="com.betsson.sportsbook" />
         <package android:name="com.rivalo.app" />

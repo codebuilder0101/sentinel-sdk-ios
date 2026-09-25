@@ -179,6 +179,133 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Dynamic App Detection Target Input Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="@color/card_bg"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="DYNAMIC APP DETECTION TARGETS"
+                    android:textColor="@color/accent"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="10dp"
+                    android:text="Enter app names or package IDs separated by commas or newlines:"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <!-- Target Apps Input -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:hint="Apps to Scan (Names or Package IDs)"
+                    android:textColorHint="@color/text_secondary"
+                    app:boxBackgroundColor="@color/background"
+                    app:boxStrokeColor="@color/accent"
+                    app:hintTextColor="@color/accent">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_target_apps"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="top|start"
+                        android:inputType="textMultiLine"
+                        android:lines="3"
+                        android:maxLines="6"
+                        android:text="bet365, Superbet, SportyBet, Betano"
+                        android:textColor="@color/text_primary"
+                        android:textSize="13sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Preset Quick Buttons for Target Apps -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="4dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_preset_four_apps"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="3dp"
+                        android:layout_weight="1"
+                        android:paddingHorizontal="4dp"
+                        android:text="4 Target Apps"
+                        android:textColor="@color/accent"
+                        android:textSize="11sp"
+                        app:strokeColor="@color/accent" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_preset_all_betting"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="3dp"
+                        android:layout_weight="1"
+                        android:paddingHorizontal="4dp"
+                        android:text="All Betting (25+)"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp"
+                        app:strokeColor="@color/border" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_preset_common_apps"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="3dp"
+                        android:layout_weight="1"
+                        android:paddingHorizontal="4dp"
+                        android:text="Common Apps (Test)"
+                        android:textColor="@color/success"
+                        android:textSize="11sp"
+                        app:strokeColor="@color/success" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_clear_apps"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="3dp"
+                        android:layout_weight="1"
+                        android:paddingHorizontal="4dp"
+                        android:text="Clear List"
+                        android:textColor="@color/danger"
+                        android:textSize="11sp"
+                        app:strokeColor="@color/danger" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Main Action Button & Progress -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_capture"
@@ -186,7 +313,7 @@
             android:layout_height="56dp"
             android:layout_marginBottom="8dp"
             android:backgroundTint="@color/accent"
-            android:text="Run Sentinel Capture"
+            android:text="Run Sentinel Capture &amp; Detection"
             android:textAllCaps="false"
             android:textColor="@color/text_primary"
             android:textSize="16sp"
@@ -239,6 +366,15 @@
                     android:text="• Risk Level: -" />
 
                 <TextView
+                    android:id="@+id/tv_summary_apps_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp"
+                    android:text="• Target Apps: -" />
+
+                <TextView
                     android:id="@+id/tv_summary_user_valid"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -264,6 +400,54 @@
                     android:textColor="@color/text_primary"
                     android:textSize="13sp"
                     android:text="• Root / Spoof: -" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Detailed App Detection Breakdown Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_app_detection_results"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/card_bg"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📱 INSTALLED APPS DETECTION BREAKDOWN"
+                    android:textColor="@color/accent"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_app_detection_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="10dp"
+                    android:text="Target check status against Android PackageManager:"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_app_detection_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:lineSpacingExtra="3dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
