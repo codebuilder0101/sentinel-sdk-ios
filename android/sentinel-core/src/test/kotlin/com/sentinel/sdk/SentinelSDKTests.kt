@@ -120,8 +120,34 @@ class SentinelSDKTests {
         val targets = AppDetectionCollector.DEFAULT_TARGETS
         assertTrue(targets.size >= 20)
         assertTrue(targets.any { it.packageName == "com.bet365.app" })
+        assertTrue(targets.any { it.packageName == "com.superbet.app" })
+        assertTrue(targets.any { it.packageName == "com.sportybet.android" })
+        assertTrue(targets.any { it.packageName == "com.betano.app" })
         assertTrue(targets.any { it.packageName == "gr.novibet" })
         assertTrue(targets.any { it.packageName == "com.sportingbet.sportsbook" })
+    }
+
+    @Test
+    fun testDynamicAppTargetParsingUserRequestedApps() {
+        val input = "bet365, Superbet, SportyBet, Betano"
+        val targets = AppDetectionCollector.parseTargetsFromInput(input)
+
+        assertTrue(targets.size >= 4)
+        assertTrue(targets.any { it.packageName == "com.bet365.app" })
+        assertTrue(targets.any { it.packageName == "com.superbet.app" })
+        assertTrue(targets.any { it.packageName == "com.sportybet.android" })
+        assertTrue(targets.any { it.packageName == "com.betano.app" })
+    }
+
+    @Test
+    fun testDynamicAppTargetParsingCustomFormats() {
+        val input = "com.custom.app, MyBettingApp:com.mybet.pkg, CustomSocial (com.social.app)"
+        val targets = AppDetectionCollector.parseTargetsFromInput(input)
+
+        assertEquals(3, targets.size)
+        assertTrue(targets.any { it.packageName == "com.custom.app" })
+        assertTrue(targets.any { it.packageName == "com.mybet.pkg" && it.name == "MyBettingApp" })
+        assertTrue(targets.any { it.packageName == "com.social.app" && it.name == "CustomSocial" })
     }
 
     // MARK: - JSON Serialization Tests
