@@ -107,6 +107,34 @@
       "android_package": "com.pyrsoftware.pokerstars",
       "ios_scheme": "pokerstars",
       "ios_support_status": "supported"
+    },
+    {
+      "id": "bet365_br",
+      "name": "bet365 Brazil",
+      "android_package": "com.bet365SportsBR.Bet365_Application",
+      "ios_scheme": "bet365",
+      "ios_support_status": "supported"
+    },
+    {
+      "id": "superbet_br",
+      "name": "Superbet Brazil",
+      "android_package": "br.bet.superbet.sport",
+      "ios_scheme": "superbet",
+      "ios_support_status": "supported"
+    },
+    {
+      "id": "betano_br",
+      "name": "Betano Brazil",
+      "android_package": "com.kaizengaming.betano.brazil",
+      "ios_scheme": "betano",
+      "ios_support_status": "supported"
+    },
+    {
+      "id": "sportybet_br",
+      "name": "SportyBet Brazil",
+      "android_package": "com.sportybet.android.gp.brazil",
+      "ios_scheme": "sportybet",
+      "ios_support_status": "supported"
     }
   ]
 }
