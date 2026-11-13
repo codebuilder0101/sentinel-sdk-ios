@@ -18,6 +18,10 @@ public final class SentinelSDK {
     private let locationCollector = LocationCollector()
     private let appDetectionCollector = AppDetectionCollector()
 
+    public private(set) var mobfacilConfig: MobfacilAuthConfig?
+    public private(set) var tokenManager: MobfacilTokenManager?
+    public private(set) var collectorService: MobfacilCollectorService?
+
     private init() {}
 
     /// Initializes the Sentinel SDK with client API credentials.
@@ -121,6 +125,41 @@ public final class SentinelSDK {
             throw NSError(domain: "SentinelSDK", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to encode JSON payload"])
         }
         return jsonString
+    }
+
+    /// Configures the MobFácil Keycloak OAuth2 & KrakenD gateway pipeline.
+    public func configureMobfacil(
+        config: MobfacilAuthConfig = MobfacilAuthConfig(),
+        storage: MobfacilTokenStorage? = nil,
+        transport: MobfacilHTTPTransport? = nil
+    ) {
+        self.mobfacilConfig = config
+        let manager = MobfacilTokenManager(config: config, storage: storage, transport: transport)
+        self.tokenManager = manager
+        self.collectorService = MobfacilCollectorService(config: config, tokenManager: manager, transport: transport)
+    }
+
+    /// Captures telemetry and transmits the resulting payload to MobFácil gateway with Bearer authentication.
+    public func transmitTelemetry(
+        configuration: CaptureConfiguration,
+        endpoint: String? = nil
+    ) async throws -> MobfacilCollectorResponse {
+        guard let collector = self.collectorService else {
+            throw MobfacilAuthError.invalidToken
+        }
+        let payload = await capture(configuration: configuration)
+        return try await collector.transmit(payload: payload, endpoint: endpoint)
+    }
+
+    /// Transmits an existing SentinelPayload to the MobFácil collector endpoint.
+    public func transmitPayload(
+        _ payload: SentinelPayload,
+        endpoint: String? = nil
+    ) async throws -> MobfacilCollectorResponse {
+        guard let collector = self.collectorService else {
+            throw MobfacilAuthError.invalidToken
+        }
+        return try await collector.transmit(payload: payload, endpoint: endpoint)
     }
 }
 

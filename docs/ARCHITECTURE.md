@@ -84,3 +84,53 @@ graph TD
 1. **Payload Canonicalization**: Normalized JSON representation.
 2. **SHA-256 Hashing**: Generates an authoritative digest of the payload.
 3. **Cryptographic Signature**: Signs payload digest with client API credentials / session nonce using Apple `CryptoKit` on iOS and Android Keystore / HMAC-SHA256 on Android.
+
+---
+
+## 4. MobFácil Keycloak OAuth2 & KrakenD Gateway Pipeline
+
+### 4.1 Component Layers
+
+```mermaid
+graph TD
+    subgraph Host Application
+        App[Host Application / SentinelSDK Facade]
+    end
+
+    subgraph MobFácil Authentication & Collector Layer
+        Config[MobfacilAuthConfig]
+        Models[MobfacilAuthModels]
+        TokenMgr[MobfacilTokenManager Actor]
+        Storage[(MobfacilTokenStorage / UserDefaults)]
+        Collector[MobfacilCollectorService]
+        Transport[MobfacilHTTPTransport]
+        DNSFallback[MobfacilSocketTransport with SNI Fallback]
+    end
+
+    subgraph Gateway & IDP Infrastructure
+        Keycloak[MobFácil Keycloak IDP /login/token]
+        KrakenD[KrakenD Gateway /telemetry]
+    end
+
+    App --> Collector
+    Collector --> TokenMgr
+    TokenMgr --> Storage
+    TokenMgr --> Transport
+    Collector --> Transport
+    Transport -->|Standard System DNS| Keycloak
+    Transport -->|Standard System DNS| KrakenD
+    Transport -.->|DNS Fallback 65.21.200.181 + SNI| DNSFallback
+    DNSFallback -.-> Keycloak
+    DNSFallback -.-> KrakenD
+```
+
+### 4.2 Lifecycle Flows
+
+1. **Flow 1 (Company Authentication)**: Client credentials request to `POST /login/token` (`grant_type=client_credentials`, `client_id`, `client_secret`). Calculates `expiresAt = now + expiresIn` and persists token in storage.
+2. **Flow 2 (Data Transmission)**: Serializes payload, injects `Authorization: Bearer <token>`, and transmits to KrakenD Gateway.
+3. **Flow 2 Alt (401 Retry)**: If 401 Unauthorized is returned, invalidates cache, forces token refresh (`forceRefresh = true`), and retries transmission once.
+4. **Flow 3 (Proactive Renewal & Concurrency Safety)**: When `remainingSeconds <= 60s`, kicks off background renewal. Concurrent callers share a coalesced in-flight `Task` lock avoiding duplicate requests.
+5. **Flow 4 (Inadimplência)**: Maps `invalid_client` to `licenseBlocked` ("Licença bloqueada por inadimplência").
+6. **Flow 5 (Secret Rotation)**: Maps `unauthorized_client` to `unauthorizedClient` ("Credenciais inválidas ou secret rotacionado").
+7. **International DNS Fallback**: When standard DNS resolution of staging hostname `api.stg.mobfacil.com.br` fails on international carriers, falls back to IP `65.21.200.181` while preserving the original hostname for TLS SNI.
+

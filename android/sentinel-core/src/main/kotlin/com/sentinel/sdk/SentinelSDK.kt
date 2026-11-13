@@ -6,6 +6,15 @@ import com.sentinel.sdk.collectors.AppDetectionCollector
 import com.sentinel.sdk.collectors.DeviceDataCollector
 import com.sentinel.sdk.collectors.LocationCollector
 import com.sentinel.sdk.collectors.PersonalDataValidator
+import com.sentinel.sdk.mobfacil.MobfacilAuthConfig
+import com.sentinel.sdk.mobfacil.MobfacilAuthException
+import com.sentinel.sdk.mobfacil.MobfacilCollectorResponse
+import com.sentinel.sdk.mobfacil.MobfacilCollectorService
+import com.sentinel.sdk.mobfacil.MobfacilHttpTransport
+import com.sentinel.sdk.mobfacil.MobfacilTokenManager
+import com.sentinel.sdk.mobfacil.MobfacilTokenStorage
+import com.sentinel.sdk.mobfacil.OkHttpMobfacilTransport
+import com.sentinel.sdk.mobfacil.SharedPreferencesMobfacilTokenStorage
 import com.sentinel.sdk.models.SentinelDeviceData
 import com.sentinel.sdk.models.SentinelInstalledApps
 import com.sentinel.sdk.models.SentinelLocationData
@@ -84,6 +93,45 @@ class SentinelSDK private constructor(private val context: Context) {
     private val deviceDataCollector = DeviceDataCollector(context)
     private val locationCollector = LocationCollector(context)
     private val appDetectionCollector = AppDetectionCollector(context)
+
+    var mobfacilConfig: MobfacilAuthConfig? = null
+        private set
+    var tokenManager: MobfacilTokenManager? = null
+        private set
+    var collectorService: MobfacilCollectorService? = null
+        private set
+
+    fun configureMobfacil(
+        config: MobfacilAuthConfig = MobfacilAuthConfig(),
+        storage: MobfacilTokenStorage? = null,
+        transport: MobfacilHttpTransport? = null
+    ) {
+        this.mobfacilConfig = config
+        val resolvedStorage = storage ?: SharedPreferencesMobfacilTokenStorage(context)
+        val resolvedTransport = transport ?: OkHttpMobfacilTransport(config)
+        val manager = MobfacilTokenManager(config, resolvedStorage, resolvedTransport)
+        this.tokenManager = manager
+        this.collectorService = MobfacilCollectorService(config, manager, resolvedTransport)
+    }
+
+    suspend fun transmitTelemetry(
+        options: CaptureOptions,
+        endpoint: String? = null
+    ): MobfacilCollectorResponse {
+        val collector = collectorService
+            ?: throw MobfacilAuthException.TokenException("Mobfacil is not configured. Call SentinelSDK.getInstance().configureMobfacil() first.")
+        val payload = capture(options)
+        return collector.transmit(payload, endpoint)
+    }
+
+    suspend fun transmitPayload(
+        payload: SentinelPayload,
+        endpoint: String? = null
+    ): MobfacilCollectorResponse {
+        val collector = collectorService
+            ?: throw MobfacilAuthException.TokenException("Mobfacil is not configured. Call SentinelSDK.getInstance().configureMobfacil() first.")
+        return collector.transmit(payload, endpoint)
+    }
 
     data class CaptureOptions(
         val userData: PersonalDataValidator.Input,

@@ -48,6 +48,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvSummaryUserValid: TextView
     private lateinit var tvSummaryLocation: TextView
     private lateinit var tvSummaryRoot: TextView
+    private lateinit var tvSummaryAuth: TextView
+    private lateinit var tvSummaryApi: TextView
 
     private lateinit var cardAppDetectionResults: MaterialCardView
     private lateinit var tvAppDetectionSubtitle: TextView
@@ -70,12 +72,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize SDK
+        // Initialize SDK & MobFácil Pipeline
         SentinelSDK.initialize(
             context = this,
             apiKey = "test_enterprise_api_key_12345",
             environment = "sandbox"
         )
+        SentinelSDK.getInstance().configureMobfacil()
 
         bindViews()
         setupListeners()
@@ -105,6 +108,8 @@ class MainActivity : AppCompatActivity() {
         tvSummaryUserValid = findViewById(R.id.tv_summary_user_valid)
         tvSummaryLocation = findViewById(R.id.tv_summary_location)
         tvSummaryRoot = findViewById(R.id.tv_summary_root)
+        tvSummaryAuth = findViewById(R.id.tv_summary_auth)
+        tvSummaryApi = findViewById(R.id.tv_summary_api)
 
         cardAppDetectionResults = findViewById(R.id.card_app_detection_results)
         tvAppDetectionSubtitle = findViewById(R.id.tv_app_detection_subtitle)
@@ -223,6 +228,34 @@ class MainActivity : AppCompatActivity() {
                 val mockStatus = if (payload.locationData.isMockLocation) "🔴 MOCK GPS" else "🟢 Real GPS"
                 val emuStatus = if (payload.deviceData.isEmulator) "🟡 Emulator" else "🟢 Physical Device"
                 tvSummaryRoot.text = "• Device / Security: $rootStatus | $mockStatus | $emuStatus"
+
+                // 1. Authenticate with MobFácil Keycloak (POST /login/token)
+                tvSummaryAuth.text = "• MobFácil Keycloak Auth: ⏳ Requesting Bearer token..."
+                try {
+                    val token = sdk.tokenManager?.getValidToken()
+                    if (token != null) {
+                        val expiresIn = token.remainingSeconds()
+                        tvSummaryAuth.text = "• MobFácil Keycloak Auth: 🟢 Token Acquired (${token.tokenType}, ${expiresIn}s left)"
+                    } else {
+                        tvSummaryAuth.text = "• MobFácil Keycloak Auth: 🔴 Token was null"
+                    }
+                } catch (e: com.sentinel.sdk.mobfacil.MobfacilAuthException.LicenseBlocked) {
+                    tvSummaryAuth.text = "• MobFácil Keycloak Auth: 🔴 ${e.message}"
+                } catch (e: com.sentinel.sdk.mobfacil.MobfacilAuthException.UnauthorizedClient) {
+                    tvSummaryAuth.text = "• MobFácil Keycloak Auth: 🔴 ${e.message}"
+                } catch (e: Exception) {
+                    tvSummaryAuth.text = "• MobFácil Keycloak Auth: 🔴 Auth error: ${e.localizedMessage}"
+                }
+
+                // 2. Transmit to KrakenD Gateway (POST /telemetry with Bearer token)
+                tvSummaryApi.text = "• KrakenD Telemetry: ⏳ Transmitting payload..."
+                try {
+                    val apiResponse = sdk.transmitPayload(payload)
+                    val trackingText = apiResponse.trackingId?.let { " (Tracking: $it)" } ?: ""
+                    tvSummaryApi.text = "• KrakenD Telemetry: 🟢 ${apiResponse.statusCode} OK$trackingText"
+                } catch (e: Exception) {
+                    tvSummaryApi.text = "• KrakenD Telemetry: 🟡 Transmission: ${e.localizedMessage}"
+                }
 
                 // Update App Detection Detailed Breakdown
                 cardAppDetectionResults.visibility = View.VISIBLE

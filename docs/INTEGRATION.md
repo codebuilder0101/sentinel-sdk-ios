@@ -167,3 +167,62 @@ The repository provides fully functional native testing applications for both **
   - Live Telemetry & Risk Summary badge metrics.
   - Formatted JSON inspector with clipboard copying.
 
+---
+
+## 5. MobFácil Keycloak OAuth2 & KrakenD Gateway Authentication Pipeline
+
+Sentinel iOS SDK provides a decoupled authentication and telemetry pipeline conforming to MobFácil Keycloak specifications and KrakenD API Gateway policies.
+
+### 5.1 Architecture & Components
+
+1. **`MobfacilAuthConfig`**: Holds endpoint paths (`POST /login/token`), credentials (`grant_type=client_credentials`, `client_id`, `client_secret`), proactive renewal buffer (`60s`), and DNS fallback mappings.
+2. **`MobfacilAuthModels`**: Encapsulates `MobfacilToken`, expiration calculations (`isExpired`, `isExpiringSoon`), and error classifications (`licenseBlocked`, `unauthorizedClient`).
+3. **`MobfacilTokenManager`**: Thread-safe Swift actor managing OAuth2 client credentials, token caching, storage persistence (`UserDefaultsMobfacilTokenStorage`), coalesced renewal locks, and business error mapping.
+4. **`MobfacilCollectorService`**: Handles JSON payload serialization, Bearer header injection (`Authorization: Bearer <token>`), and the Flow 2 Alt (401 Retry) recovery loop.
+5. **Resilient DNS Fallback (`MobfacilDNSResolver` & `MobfacilSocketTransport`)**: Resolves `api.stg.mobfacil.com.br` to fallback IP `65.21.200.181` when international CNAME delegations fail, preserving the original hostname for TLS SNI.
+
+### 5.2 Swift Native Integration Example
+
+```swift
+import SentinelSDK
+
+// 1. Configure MobFácil pipeline
+let config = MobfacilAuthConfig(
+    baseUrl: URL(string: "https://api.stg.mobfacil.com.br")!,
+    tokenEndpoint: "/login/token",
+    dataEndpoint: "/telemetry",
+    clientId: "sdk_ken_QA",
+    clientSecret: "nkO2atoPD3po2U3vPYQz8m8V1LXq84fU",
+    renewalBufferSeconds: 60.0
+)
+
+SentinelSDK.shared.configureMobfacil(config: config)
+
+// 2. Capture and transmit telemetry
+do {
+    let captureConfig = SentinelSDK.CaptureConfiguration(
+        userData: PersonalDataValidator.Input(
+            fullName: "Carlos Eduardo da Silva",
+            documentId: "123.456.789-09",
+            email: "carlos.silva@example.com",
+            phoneNumber: "+5511999998888"
+        )
+    )
+
+    let response = try await SentinelSDK.shared.transmitTelemetry(configuration: captureConfig)
+    print("Telemetry transmitted successfully: trackingId=\(response.trackingId ?? "N/A")")
+} catch let error as MobfacilAuthError {
+    switch error {
+    case .licenseBlocked(let description):
+        // Flow 4: Inadimplência
+        print("Licença bloqueada por inadimplência: \(description)")
+    case .unauthorizedClient(let description):
+        // Flow 5: Secret Rotated or Compromised
+        print("Credenciais inválidas ou secret rotacionado: \(description)")
+    default:
+        print("Authentication or Transmission Error: \(error.localizedDescription)")
+    }
+}
+```
+
+

@@ -118,11 +118,15 @@ class SentinelSDKTests {
     @Test
     fun testAppDetectionDefaultTargets() {
         val targets = AppDetectionCollector.DEFAULT_TARGETS
-        assertTrue(targets.size >= 20)
+        assertTrue(targets.size >= 24)
         assertTrue(targets.any { it.packageName == "com.bet365.app" })
+        assertTrue(targets.any { it.packageName == "com.bet365SportsBR.Bet365_Application" })
         assertTrue(targets.any { it.packageName == "com.superbet.app" })
+        assertTrue(targets.any { it.packageName == "br.bet.superbet.sport" })
         assertTrue(targets.any { it.packageName == "com.sportybet.android" })
+        assertTrue(targets.any { it.packageName == "com.sportybet.android.gp.brazil" })
         assertTrue(targets.any { it.packageName == "com.betano.app" })
+        assertTrue(targets.any { it.packageName == "com.kaizengaming.betano.brazil" })
         assertTrue(targets.any { it.packageName == "gr.novibet" })
         assertTrue(targets.any { it.packageName == "com.sportingbet.sportsbook" })
     }
@@ -134,9 +138,47 @@ class SentinelSDKTests {
 
         assertTrue(targets.size >= 4)
         assertTrue(targets.any { it.packageName == "com.bet365.app" })
+        assertTrue(targets.any { it.packageName == "com.bet365SportsBR.Bet365_Application" })
+        assertTrue(targets.any { it.packageName == "com.bet365Wrapper.Bet365_Application" })
         assertTrue(targets.any { it.packageName == "com.superbet.app" })
+        assertTrue(targets.any { it.packageName == "br.bet.superbet.sport" })
+        assertTrue(targets.any { it.packageName == "rs.superbet.sport" })
+        assertTrue(targets.any { it.packageName == "ro.superbet.sport" })
         assertTrue(targets.any { it.packageName == "com.sportybet.android" })
+        assertTrue(targets.any { it.packageName == "com.sportybet.android.gp.brazil" })
         assertTrue(targets.any { it.packageName == "com.betano.app" })
+        assertTrue(targets.any { it.packageName == "com.kaizengaming.betano.brazil" })
+    }
+
+    @Test
+    fun testDynamicAppTargetParsingTypoAutoCorrectionAndFuzzyMatching() {
+        // Test typos and formatting variations:
+        // "suprbet" -> typo of "superbet"
+        // "bet 365" -> spaced variant of "bet365"
+        // "spotybet" -> typo of "sportybet"
+        // "betanoo" -> typo of "betano"
+        // "kaizengaming" -> Betano Brazil
+        val input = "suprbet, bet 365, spotybet, betanoo, kaizengaming"
+        val targets = AppDetectionCollector.parseTargetsFromInput(input)
+
+        assertTrue(targets.any { it.packageName == "br.bet.superbet.sport" })
+        assertTrue(targets.any { it.packageName == "rs.superbet.sport" })
+        assertTrue(targets.any { it.packageName == "com.bet365SportsBR.Bet365_Application" })
+        assertTrue(targets.any { it.packageName == "com.bet365Wrapper.Bet365_Application" })
+        assertTrue(targets.any { it.packageName == "com.sportybet.android.gp.brazil" })
+        assertTrue(targets.any { it.packageName == "com.sportybet.android" })
+        assertTrue(targets.any { it.packageName == "com.kaizengaming.betano.brazil" })
+        assertTrue(targets.any { it.packageName == "com.betano.app" })
+    }
+
+    @Test
+    fun testLevenshteinDistanceCalculation() {
+        assertEquals(0, AppDetectionCollector.levenshteinDistance("superbet", "superbet"))
+        assertEquals(1, AppDetectionCollector.levenshteinDistance("suprbet", "superbet"))
+        assertEquals(2, AppDetectionCollector.levenshteinDistance("superbte", "superbet"))
+        assertEquals(2, AppDetectionCollector.levenshteinDistance("sprbet", "superbet"))
+        assertEquals(2, AppDetectionCollector.levenshteinDistance("bet365", "bte365"))
+        assertEquals(1, AppDetectionCollector.levenshteinDistance("bet365", "bet36"))
     }
 
     @Test
